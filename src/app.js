@@ -1,7 +1,8 @@
 const express=require("express")
 const authRouter=require('./routes/authRoutes')
-const app=express();
-
-app.use(express.json());
+const app=express()
+const organizationRoutes=require("./routes/organization.routes")
+app.use(express.json())
 app.use("/api/auth",authRouter)
-module.exports=app;
+app.use("/api/organizations",organizationRoutes)
+module.exports=app
