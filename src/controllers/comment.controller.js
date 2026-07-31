@@ -109,14 +109,14 @@ const updateComment=async (req,res)=>{
 const deleteComment=async (req,res)=>{
     try{
         const {id}=req.params
-        const comment=await comment.findById(id)
+        const comment=await Comment.findById(id)
         if(!comment){
             return res.status(404).json({
                 message:"Comment not found"
             })
         }
 
-        if(comment.createdAt.toString()!==req.user._id.toString()){
+        if(comment.createdBy.toString()!==req.user._id.toString()){
             return res.status(403).json({
                 message:"You are not authorized to delete this comment"
             })
