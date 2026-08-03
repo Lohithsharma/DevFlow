@@ -45,7 +45,7 @@ const uploadAttachment=async (req,res)=>{
 const getAttachmentsByTask=async (req,res)=>{
     try{
         const {taskId}=req.params
-        const task=await Task.findOne(taskId)
+        const task=await Task.findById(taskId)
 
         if(!task){
             return res.status(404).json({

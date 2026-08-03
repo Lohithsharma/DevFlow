@@ -33,13 +33,58 @@ const createProject=async (req,res)=>{
 
 const getProjects=async (req,res)=>{
     try{
+        const {
+            search,
+            status,
+            organization,
+            projectLead,
+            page=1,
+            limit=10,
+            sort="-createdAt"
+        }=req.query
+
+        const filter={}
+
+        if(search){
+            filter.name={
+                $regex:search,
+                $options:"i"
+            }
+        }
+
+        if(status){
+            filter.status=status
+        }
+
+        if(organization){
+            filter.organization=organization
+        }
+
+        if(projectLead){
+            filter.projectLead=projectLead
+        }
+
+        const skip=(page-1)*limit
+
+
         const projects=await Project.find()
         .populate("organization","name")
         .populate("createdBy","name email")
         .populate("projectLead","name email")
         .populate("members","name email")
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit))
 
-        return res.status(200).json(projects)
+        const totalProjects=await Project.countDocuments(filter)
+
+        return res.status(200).json({
+            totalProjects,
+            currentPage:Number(page),
+            totalPages:Math.ceil(totalProjects/limit),
+            count:projects.length,
+            projects
+        })
     }catch(err){
         return res.status(500).json({
             message:err.message

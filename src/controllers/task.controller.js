@@ -48,12 +48,62 @@ const createTask=async (req,res)=>{
 
 const getTasks=async (req,res)=>{
     try{
-        const tasks=await Task.find()
+        const {
+            search,
+            status,
+            priority,
+            project,
+            assignedTo,
+            page=1,
+            limit=10,
+            sort="-createdAt"
+        }=req.query
+
+        const filter={}
+
+        if(search){
+            filter.title={
+                $regex:search,
+                $options:"i"
+            }
+        }
+
+        if(status){
+            filter.status=status
+        }
+
+        if(priority){
+            filter.priority=priority
+        }
+
+        if(project){
+            filter.project=project
+        }
+
+        if(assignedTo){
+            filter.assignedTo=assignedTo
+        }
+
+        const skip=(page-1)*limit
+
+        const tasks=await Task.find(filter)
         .populate("project","name")
         .populate("assignedTo","name email")
         .populate("createdBy","name email")
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit))
 
-        return res.status(200).json(tasks)
+        const totalTasks=await Task.countDocuments(filter)
+
+
+        return res.status(200).json({
+            totaltasks,
+            currentPage:Number(page),
+            totalPages:Math.ceil(totalTasks/limit),
+            count:tasks.length,
+            tasks
+        })
     }catch(err){
         return res.status(500).json({
             message:err.message
